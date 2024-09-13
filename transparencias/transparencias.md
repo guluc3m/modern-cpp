@@ -34,6 +34,14 @@ _Grupo de Usuarios de Linux_
 [@guluc3m](https://twitter.com/guluc3m) | [gul.uc3m.es](https://gul.uc3m.es)
 
 ---
+
+## Transparencias
+![w:400 center](img/qrcode-transparencias.svg)
+<center>
+<a href="https://github.com/guluc3m/modern-cpp">github.com/guluc3m/modern-cpp</a>
+</center>
+
+---
 ## Entrada y Salida
 
  * Hay dos clases
@@ -75,19 +83,16 @@ Depende del computador:
 
 
 ---
-Por ejemplo un número de coma flotante en simple precisión se representa en
-memoria en base al estándar IEEE 754.
+Por ejemplo un número de coma flotante en simple precisión se representa en memoria en base al estándar IEEE 754.
 
 ```cpp
 float x = 42.0;
 ```
 
 * En IEEE 754 en hexadecimal es: 42280000
-
 * En memoria se representa como: `00 00 28 42`
 
-De igual manera la cadena `"hola"` se representa como la secuencia de los
-bytes `'h'`, `'o'`, `'l'`, `'a'`. O en hexadecimal:
+De igual manera la cadena `"hola"` se representa como la secuencia de los bytes `'h'`, `'o'`, `'l'`, `'a'`. O, en hexadecimal:
 
  * `68 6f 6c 61`
 
@@ -161,8 +166,7 @@ _Los errores del clang-tidy están solucionados en el código de ejemplo, se exp
 
 ---
 
-**Hay dos problemas** en C++ no deben hacerse las conversiones (_casts_) como
-en C. Es decir:
+**Hay dos problemas** en C++ no deben hacerse las conversiones (_casts_) como en C. Es decir:
 
 ```cpp
 file.write((const char *)(&int_value), sizeof(int_value));  // Jamás
@@ -234,12 +238,12 @@ Es similar a la entrada:
    float float_value;
    std::string string_value = "    ";
    // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   if (not file.read(reinterpret_cast<const char*>(&int_value), sizeof(int_value))) {
+   if (not file.read(reinterpret_cast<char*>(&int_value), sizeof(int_value))) {
       std::cerr << "No se pudo leer el entero\n";
       return 2;
    }
    // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   if (not file.read(reinterpret_cast<const char*>(&float_value), sizeof(float_value))) {
+   if (not file.read(reinterpret_cast<char*>(&float_value), sizeof(float_value))) {
       std::cerr << "No se pudo leer el float\n";
       return 2;
    }
@@ -271,8 +275,7 @@ void print_square (long x) {
 </div>
 <div>
 
-A veces nos encontramos con que repetimos la misma función para distintos
-tipos.
+A veces nos encontramos con que repetimos la misma función para distintos tipos.
 
 ```cpp
 print_square(2);   // Funciona, es `int'
@@ -314,8 +317,78 @@ void print_square (float x) {
  - `std::vector<my_type>`...
  - `std::vector<std::vector<std::string>>`
 * Todas las funciones de la clase se definen para el tipo del _template_
-* En C, tendríamos que usar `void*` o definirlo para cada posible tipo. Y
-  para cada posible operación.
+* En C, tendríamos que usar `void*` o definirlo para cada posible tipo. Y para cada posible operación.
+
+---
+
+Podemos generalizar la función de lectura y escritura de antes:
+
+```cpp
+template <typename T>
+void write (std::ostream & out, T const & value) {
+   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+   out.write(reinterpret_cast<const char*>(&value), sizeof(T));
+}
+
+// Podemos especializar para std::string
+void write (std::ostream & out, std::string const & value) {
+   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+   out.write(value.data(), static_cast<std::streamsize>(value.size()));
+}
+
+template <typename T>
+bool read (std::istream & in, T & value) {
+   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+   return static_cast<bool>(in.read(reinterpret_cast<char *>(&value), sizeof(T)));
+}
+
+bool read (std::istream & in, std::string & str, int length) {
+   str = std::string(length, 0);
+   return static_cast<bool>(in.read(str.data(), length));
+}
+```
+---
+
+Y ya lo podemos usar en cualquier momento.
+
+```cpp
+constexpr int solution{42};
+
+bool write_data () {
+  // Write
+  std::ofstream output_file{"data.bin", std::ios::binary};
+  if (not output_file) {
+     std::cerr << "No se pudo crear data.bin\n";
+     return false;
+  }
+  write(output_file, solution);
+  write(output_file, static_cast<float>(solution));
+  write(output_file, std::string{"hola"});
+  output_file.close();
+  return true;
+}
+
+bool read_data () {
+  // Read
+  std::ifstream input_file{"data.bin", std::ios::binary};
+  if (not input_file) {
+     std::cerr << "No se pudo abrir data.bin\n";
+     return false;
+  }
+  int int_value{};
+  float float_value{};
+  std::string string_value{};
+  if (not read(input_file, int_value) or not read(input_file, float_value)
+      or not read(input_file, string_value, 4))
+  {
+     std::cerr << "No se pudo leer los contenidos de data.bin\n";
+     return false;
+  }
+  std::cout << int_value << "\n" << float_value << "\n" << string_value << "\n";
+  input_file.close();
+  return true;
+}
+```
 
 ---
 
@@ -325,35 +398,147 @@ void print_square (float x) {
 
 ---
 
+<center> <link href=https://en.cppreference.com/w/>https://en.cppreference.com/w/</link></center>
+
+---
+
 ### Estructuras de datos
-#### std::vector
-#### std::pair
-#### std::map
-#### std::unordered\_map
-#### std::tuple
+#### `std::vector`
+
+Constructores:
+```cpp
+constexpr inf = std::numeric_limits<int>::max();
+std::vector<float> mis_notas{8.5, 7.6, 0.5, 9.1};
+std::vector<float> tus_notas(4, 0.0);  // Vector con cuatro ceros.
+std::vector<std::vector<int>> vuelos {
+   {  0, inf,   1,   4,   2}
+   {inf,   0,   3,   4,   3}
+   {  1,   3,   0, inf,   3}
+   {  2,   8,   2,   0,   1}
+   {  3,   2,   1,   4,   0}};
+std::vector<std::string> ciudades{"Madrid", "Nueva York", "París", "Roma", "Tokio"};
+for (auto const & ciudad : ciudades)
+   std::cout << ciudad << "\n";
+```
+
+Funciones Miembro
+ * `.push_back()` y `.emplace_back()`
+ * `.reserve()`
+ * `operator[]`
+ * Más en cppreference
+
+---
+
+#### `std::tuple` y `std::pair`
+
+`std::pair` es una `std::tuple` de dos elementos. Y tiene los miembros:
+ * `.first`
+ * `.second`
+```cpp
+using mi_tipo = std::tuple<std::string, int, double>;
+mi_tipo mi_objeto = mi_tipo{"hola", 42, 42.0};
+// Descomponer
+auto [str_v, int_v, flt_v] = mi_objeto;
+// También
+auto str_v = std::get<1>(mi_objeto);
+auto int_v = std::get<2>(mi_objeto);
+auto flt_v = std::get<3>(mi_objeto);
+// Con vectors
+std::vector<std::pair<std::string, int>> ciudades {
+   {"Madrid", 1}, {"Nueva York", 2}, {"París", 3}, {"Roma", 4}, {"Tokio", 5}};
+// Descomponer al iterar
+for (auto const & [nombre, id] : ciudades) {
+   std::cout << nombre << " " << id "\n";
+}
+```
+
+---
+
+#### `std::map` y `std::unordered_map`
+
+Como los diccionarios de Python.
+
+* `std::map`, árbol de búsqueda binario
+* `std::unordered_map`, _hash map_
 
 ---
 
 ### Algoritmos
-#### std::sort
-#### std::transform
-#### std::filter
+https://en.cppreference.com/w/cpp/algorithm
+ * Ordenar, `std::sort(inicio, fin, predicado)`
+ * Mapear, `std::transform(inicio, fin, salida, operación)`
+ * Reducir, `std::accumulate(inicio, fin, primero, función)`
+ * Filtrar, `std::copy_if(inicio, fin, salida, predicado)`
+
+```cpp
+bool mayor_a_menor (int x, int y) { return x > y; }
+int cuadrado (int x) { return x * x; }
+int producto (int a, int b) { return a * b; }
+int main () {
+   std::vector<int> valores{1, 3, 4, 5, 2};
+   // Ordena los valores, haz el cuadrado de ellos, y multiplícalos.
+   std::sort(valores.begin(), valores.end(), mayor_a_menor);
+   std::transform(valores.begin(), valores.end(), valores.begin(), cuadrado);
+   std::cout << std::accumulate(valores.begin(), valores.end(), 1, producto); << "\n";
+   return 0;
+}
+```
+
+---
 
 ### Funciones lambda y predicados
-#### Funciones lambda
-#### Capturas
-#### Funciones Lambda, Estructuras de Datos y Algoritmos
+En vez de definir una las funciones por separado:
+
+```cpp
+bool mayor_a_menor (int x, int y) { return x > y; }
+int cuadrado (int x) { return x * x; }
+int producto (int a, int b) { return a * b; }
+```
+
+Podemos usar **funciones lambda**, o funciones anónimas
+
+```cpp
+std::sort(valores.begin(), valores.end(), [](int a, int b){ return a > b; });
+std::transform(valores.begin(), valores.end(), valores.begin(), [](int x){ return x * x });
+std::cout << std::accumulate(valores.begin(), valores.end(), 1, [](int a, int b) { return a * b; }); << "\n";
+```
 
 ---
 
-## Transparencias
-![w:400 center](img/qrcode-transparencias.svg)
-<center>
-<a href="https://github.com/guluc3m/modern-cpp">github.com/guluc3m/modern-cpp</a>
-</center>
+```cpp
+[capturas] (parámetros) -> retorno {
+   código
+}
+```
+ * El retorno es opcional si el compilador lo puede deducir.
+ * Las capturas son más complicadas.
+   - Su propósito es cómo se tratan las variables que se referencian en el código
 
+```cpp
+std::vector<int> filtrar_menores_de (std::vector<int> const & v, int n) {
+   std::vector<int> resultado;
+   std::copy_if(v.begin, v.end(), std::back_inserter(resultado),
+      [=] (int x) {
+         // n se referencia dentro de la función [=] dice que se copie.
+         return x < n;
+      });
+   return resultado;
+}
+```
 
 ---
+
+## Paso por Valor y Referencia
+### Referencias y Punteros
+### Copias, Referencias y Movimiento
+## ¿Qué se puede y no se puede hacer?
+### C vs C++
+### clang-tidy
+### clang-format
+## CLion, clang-format, clang-tidy y depurador
+
+---
+
 <!-- header: '**¿Qué es C++ moderno?**' -->
 
 ## ¿Qué es C++ moderno?

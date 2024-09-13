@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
-project(serialise LANGUAGES CXX)
+project(deserialise LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -20,5 +20,5 @@ FetchContent_MakeAvailable(GSL)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_CLANG_TIDY clang-tidy -header-filter=.*)
 
-add_executable(serialise serialise.cpp)
-target_link_libraries(serialise Microsoft.GSL::GSL)
+add_executable(deserialise deserialise.cpp)
+target_link_libraries(deserialise Microsoft.GSL::GSL)
