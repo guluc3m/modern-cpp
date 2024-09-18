@@ -42,12 +42,101 @@ _Grupo de Usuarios de Linux_
 </center>
 
 ---
+## C++ Moderno
+
+<!-- TODO: Mejorar estas dos partes -->
+
+- C++ 17 en adelante
+- C++ es más que «C con cosas»
+- Cuanto menos C mejor
+  - Más seguro
+  - Más rápido
+  - Mejores abstracciones
+  - Fuertemente tipado
+  - Programación funcional
+  - Más más moderno
+  - Los punteros no son necesarios
+- C++ trae mejoras de _type safety_
+- Usar las cosas nuevas es _opt-in_
+
+---
+
+### Estándares
+Especificaciones de una versión del lenguaje.
+- Documentación en [cppreference.com](https://en.cppreference.com)
+- Los compiladores son los encargados de implementarlos
+    - Nadie les "obliga"
+    - Puedes ver la compatibilidad en [cppreference](https://en.cppreference.com/w/cpp/compiler_support).
+- Uno nuevo cada 3 años
+    - Actualmente: C++23
+
+Se considera "C++ moderno" a partir de C++11.
+
+
+---
+### CppCoreGuidelines
+
+- Guía de codificación
+  - Más seguro
+  - Pilla más errores a la hora de compilar
+  - Por el mismísmo e inigualable **Bjarne Stroustrup**
+- `gsl::span` vs. `std::span`.
+
+---
+### clang-tidy
+
+- Herramienta de clang
+  - Comprueba que el código se adhiera a una guía de codificación
+  - Permite capturar muchos errores en tiempo de compilación
+  - Homogeniza el código escrito por varias personas
+- Añade una capa más de seguridad sobre C++
+- Cualquier proyecto que se respete debe tener una guía de codificación.
+
+---
+### clang-format
+
+- Aplica un formato al código
+- Todo el código fuente tiene la misma estructura
+- Si no, cada uno escribe el código como le parezca:
+
+```cpp
+   bool is_prime(int x){for(int i=2;i*i<=x;++i){
+if(x%i==0)return false;} return true;}
+ std::vector<int> prime_numbers ( int   from,   int to )
+{ std::vector<int>   result
+; for (   int i = from ;    i < to; ++i)
+  { if (is_prime(i)) {    result.push_back(i)   }
+  }
+; return result;
+}
+```
+
+---
+
+```cpp
+bool is_prime (int x) {
+   for (int i = 2; i * i <= x; ++i) {
+      if (x % i == 0) { return true; }
+   }
+   return false;
+}
+
+std::vector<int> prime_numbers (int from, int to) {
+   std::vector<int> result;
+   for (int i = from; i < to; ++i) {
+      if (is_prime(i)) { result.push_back(i); }
+   }
+   return result;
+}
+```
+
+---
 ## Entrada y Salida
 
- * Hay dos clases
+ - Hay dos clases
    - `std::istream` (Flujo de entrada)
    - `std::ostream` (Flujo de salida)
- * Por defecto se utilizan para leer y escribir texto:
+ - Por defecto se utilizan para leer y escribir texto:
 
 ```cpp
 #include <iostream>  // Incluye flujos de entrada y salida (I/O Stream)
@@ -68,7 +157,7 @@ int main () {
 
 ---
 ## Entrada y Salida binaria
-Los objetos en memoria se almacenan como una secuencia de bytes. Por ejemplo:
+Los objetos en memoria se almacenan como una secuencia de bits. Por ejemplo:
 
 ```cpp
 int x = 42;
@@ -76,27 +165,28 @@ int x = 42;
 
 Depende del computador:
 
- * _little-endian_: `2A 00 00 00`
- * _big-endian_: `00 00 00 2A`
+- _little-endian_:  `2A 00 00 00`
+- _big-endian_: `00 00 00 2A`
 
 (Vamos a suponer _little-endian_)
 
 
 ---
-Por ejemplo un número de coma flotante en simple precisión se representa en memoria en base al estándar IEEE 754.
+Por ejemplo un número de coma flotante de simple precisión se representa en memoria en base al estándar IEEE 754.
 
 ```cpp
 float x = 42.0;
 ```
 
-* En IEEE 754 en hexadecimal es: 42280000
-* En memoria se representa como: `00 00 28 42`
+- En IEEE 754 en hexadecimal es: 42280000<sub>16</sub>
+- En memoria se representa como: `00 00 28 42`
 
 De igual manera la cadena `"hola"` se representa como la secuencia de los bytes `'h'`, `'o'`, `'l'`, `'a'`. O, en hexadecimal:
 
- * `68 6f 6c 61`
+- `68 6f 6c 61`
 
 ---
+
 En un archivo sabemos escribir cadenas.
 
 ```cpp
@@ -104,8 +194,8 @@ En un archivo sabemos escribir cadenas.
 
 int main () {
    std::ofstream my_output{"my-file.txt"};
-   my_output << "42"   << "\n"
-             << "42.0" << "\n"
+   my_output << 42     << "\n"
+             << 42.0   << "\n"
              << "hola" << "\n";
    my_output.close();
    return 0;
@@ -123,24 +213,87 @@ hola
 ¿Y si en vez de escribir cadenas, escribimos los bytes _a pelo_?
 
 ---
+
+### Casts
+#### `reinterpret_cast`
+`reinterpret_cast` nos permite convertir entre punteros de distintos tipos.
+
+- En C:
+
+```c
+#include <stdio.h>
+int main () {
+   float x = 42.0;
+   float *p_x = &x;
+   // `p_y' apunta a la misma dirección que `p_x' (que es `x').
+   // Pero para `p_x' la dirección es de tipo `float'.
+   // Y para `p_y' la dirección es de tipo `unsigned int'
+   unsigned *p_y = (unsigned*)p_x;
+   unsigned y = *p_y;
+   printf("0x%08X\n", y); // Imprime 0x42280000
+}
+```
+
+- Sin embargo es **completamente inseguro**.
+
+---
+
+- En C++, está `reinterpret_cast` que hace lo mismo.
+- Los casts en C++ destacan más.
+
+```cpp
+#include <iostream>
+int main () {
+   float x = 42.0;
+   float *p_x = &x;
+   unsigned *p_y = reinterpret_cast<unsigned*>(p_x);
+   unsigned y = *p_y;
+   std::cout << std::hex << std::uppercase << x << "\n";
+}
+```
+
+- Hay que tener mucho cuidado
+  - Hay requisitos de alineamiento
+  - Hay requisitos de tamaño
+  - No se puede utilizar con todos los tipos.
+  - CppCoreGuidelines lo prohíbe
+  - Se debe justificar su uso
+
+---
+#### `static_cast`
+- Hace una conversión «real» entre tipos.
+   - `static_cast<int>(42.3)` devuelve `42`.
+   - `static_cast<float>(32)` devuelve `32.0`.
+- Si existe un operador de conversión, se utiliza:
+   - `static_cast<bool>(my_file)` devuelve o `true` o `false`.
+- Al igual que `reinterpret_cast`, destaca.
+- Hay que tener cuidado con ciertas conversiones (clang-tidy ayuda).
+```cpp
+static_cast<unsigned>(-3);          // No se puede representar
+static_cast<float>(33'554'432);     // Pierde, precisión 25 vs 23 bits
+static_cast<int>(1.2E100);          // Demasiado grande
+static_cast<int>(7'000'000'000L);   // Demasiado grande
+```
+
+---
 ### Salida binaria en C++
 
 Empezamos abriendo el archivo:
- * Con constructor (`std::ofstream my_file{"my-file.bin", std::ios::binary};`)
- * Con función miembro (`my_file.open("my-file.bin", std::ios::binary);`)
+- Con constructor
+- Con función miembro
 ```cpp
 #include <fstream>
 #include <iostream>
 
 int main () {
-   std::ofstream file{"my-file.bin", std::ios::binary};
-   // También:
-   //    std::ofstream file;
-   //    file.open("my-file.bin", std::ios::binary);
-   if (not file) {   // Comprobamos que se abrió bien.
-      std::cerr << "No se pudo abrir el archivo\n";
-      return -1;
-   }
+std::ofstream file{"my-file.bin", std::ios::binary};
+// También:
+//    std::ofstream file;
+//    file.open("my-file.bin", std::ios::binary);
+if (not file) {   // Comprobamos que se abrió bien.
+   std::cerr << "No se pudo abrir el archivo\n";
+   return -1;
+}
 ```
 
 ---
@@ -148,17 +301,17 @@ int main () {
 Ahora que tenemos el archivo abierto, podemos escribir distintos valores:
 
 ```cpp
-   int int_value = 42; // ¡¡Número mágico!!
-   float float_value = 42.0;
-   std::string string_value = "hola";
-   file.write(reinterpret_cast<const char*>(&int_value), sizeof(int_value));
-   file.write(reinterpret_cast<const char*>(&float_value), sizeof(float_value));
-   file.write(string_value.data(), string_value.size()); // ¡¡Conversión implícita!!
+int int_value = 42; // ¡Número mágico!
+float float_value = 42.0;
+std::string string_value = "hola";
+file.write(reinterpret_cast<const char*>(&int_value), sizeof(int_value));
+file.write(reinterpret_cast<const char*>(&float_value), sizeof(float_value));
+file.write(string_value.data(), string_value.size()); // ¡Conversión implícita!
 ```
 
 La función miembro `std::ostream write` pide dos parámetros de tipos:
- * `const char *`
- * `std::size_t`
+ - `const char *`
+ - `std::size_t`
 
 De manera similar a la función `fwrite' en C.
 
@@ -166,24 +319,11 @@ _Los errores del clang-tidy están solucionados en el código de ejemplo, se exp
 
 ---
 
-**Hay dos problemas** en C++ no deben hacerse las conversiones (_casts_) como en C. Es decir:
-
-```cpp
-file.write((const char *)(&int_value), sizeof(int_value));  // Jamás
-file.write(reinterpret_cast<const char*>(&int_value), sizeof(int_value)); // Válido
-```
-
-Además `clang-tidy` se va a quejar del código de que acabamos de escribir.
- * La conversiones tipo `reinterpret_cast` no son _type-safe_.
- * `int y = 10; float x = *reinterpret_cast<float*>(&x)` es UB.
-
----
-
-En este caso está justificado:
- * Solo existe una función del tipo `write`
+En este caso está justificado el uso del `reinterpret_cast`:
+ - Solo existe una función del tipo `write`
    - Que pide un puntero a una cadena de carácteres (`const char *`)
    - Y el tamaño de la cadena (`std::size_t`).
- * No se puede hacer de ninguna otra forma.
+ - No se puede hacer de ninguna otra forma.
 
 Así que lo comentamos:
 
@@ -211,8 +351,8 @@ Terminamos cerrando el archivo.
 ```
 
 Si ejecutamos el programa anterior (`ejemplos/0-serialización`).
- * Obtenemos un archivo `my-file.bin`
- * Si lo leemos con `hexdump`
+ - Obtenemos un archivo `my-file.bin`
+ - Si lo leemos con `hexdump`
 
 > hexdump -C my-file.bin
 
@@ -224,8 +364,8 @@ Si ejecutamos el programa anterior (`ejemplos/0-serialización`).
 ---
 ### Entrada binaria en C++
 Es similar a la entrada:
- * `std::ifstream` en vez de `std::ofstream`.
- * `.read()` en vez de `.write()`.
+ - `std::ifstream` en vez de `std::ofstream`.
+ - `.read()` en vez de `.write()`.
 
 ```cpp
    // ejemplos/2.deserialización
@@ -257,7 +397,7 @@ Es similar a la entrada:
 
 ---
 ### Templates
- * Una _template_ es una plantilla.
+ - Una _template_ es una plantilla.
 
 <div class="columns">
 <div>
@@ -297,11 +437,11 @@ void print_square (T x) {
 }
 ```
 
- * La `T` se sustituye por el tipo que le pasemos.
+ - La `T` se sustituye por el tipo que le pasemos.
    - `print_square<int>(10)`
    - `print_square(10)`, se deduce el tipo.
- * Si para un tipo no se define alguna función, falla.
- * `print_square<float>` es equivalente a la función:
+ - Si para un tipo no se define alguna función, falla.
+ - `print_square<float>` es equivalente a la función:
 
 ```cpp
 // T = float
@@ -312,12 +452,12 @@ void print_square (float x) {
 
 ---
 
-* También sirve para estructuras de datos:
+- También sirve para estructuras de datos:
  - `std::vector<int>`
  - `std::vector<my_type>`...
  - `std::vector<std::vector<std::string>>`
-* Todas las funciones de la clase se definen para el tipo del _template_
-* En C, tendríamos que usar `void*` o definirlo para cada posible tipo. Y para cada posible operación.
+- Todas las funciones de la clase se definen para el tipo del _template_
+- En C, tendríamos que usar `void*` o definirlo para cada posible tipo. Y para cada posible operación.
 
 ---
 
@@ -332,7 +472,6 @@ void write (std::ostream & out, T const & value) {
 
 // Podemos especializar para std::string
 void write (std::ostream & out, std::string const & value) {
-   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
    out.write(value.data(), static_cast<std::streamsize>(value.size()));
 }
 
@@ -422,18 +561,18 @@ for (auto const & ciudad : ciudades)
 ```
 
 Funciones Miembro
- * `.push_back()` y `.emplace_back()`
- * `.reserve()`
- * `operator[]`
- * Más en cppreference
+ - `.push_back()` y `.emplace_back()`
+ - `.reserve()`
+ - `operator[]`
+ - Más en cppreference
 
 ---
 
 #### `std::tuple` y `std::pair`
 
 `std::pair` es una `std::tuple` de dos elementos. Y tiene los miembros:
- * `.first`
- * `.second`
+ - `.first`
+ - `.second`
 ```cpp
 using mi_tipo = std::tuple<std::string, int, double>;
 mi_tipo mi_objeto = mi_tipo{"hola", 42, 42.0};
@@ -458,17 +597,17 @@ for (auto const & [nombre, id] : ciudades) {
 
 Como los diccionarios de Python.
 
-* `std::map`, árbol de búsqueda binario
-* `std::unordered_map`, _hash map_
+- `std::map`, árbol de búsqueda binario
+- `std::unordered_map`, _hash map_
 
 ---
 
 ### Algoritmos
 https://en.cppreference.com/w/cpp/algorithm
- * Ordenar, `std::sort(inicio, fin, predicado)`
- * Mapear, `std::transform(inicio, fin, salida, operación)`
- * Reducir, `std::accumulate(inicio, fin, primero, función)`
- * Filtrar, `std::copy_if(inicio, fin, salida, predicado)`
+ - Ordenar, `std::sort(inicio, fin, predicado)`
+ - Mapear, `std::transform(inicio, fin, salida, operación)`
+ - Reducir, `std::accumulate(inicio, fin, primero, función)`
+ - Filtrar, `std::copy_if(inicio, fin, salida, predicado)`
 
 ```cpp
 bool mayor_a_menor (int x, int y) { return x > y; }
@@ -498,9 +637,12 @@ int producto (int a, int b) { return a * b; }
 Podemos usar **funciones lambda**, o funciones anónimas
 
 ```cpp
-std::sort(valores.begin(), valores.end(), [](int a, int b){ return a > b; });
-std::transform(valores.begin(), valores.end(), valores.begin(), [](int x){ return x * x });
-std::cout << std::accumulate(valores.begin(), valores.end(), 1, [](int a, int b) { return a * b; }); << "\n";
+std::sort(valores.begin(), valores.end(),
+   [](int a, int b){ return a > b; });
+std::transform(valores.begin(), valores.end(), valores.begin(),
+   [](int x){ return x * x });
+std::cout << std::accumulate(valores.begin(), valores.end(), 1,
+   [](int a, int b) { return a * b; }); << "\n";
 ```
 
 ---
@@ -510,8 +652,8 @@ std::cout << std::accumulate(valores.begin(), valores.end(), 1, [](int a, int b)
    código
 }
 ```
- * El retorno es opcional si el compilador lo puede deducir.
- * Las capturas son más complicadas.
+ - El retorno es opcional si el compilador lo puede deducir.
+ - Las capturas son más complicadas.
    - Su propósito es cómo se tratan las variables que se referencian en el código
 
 ```cpp
@@ -529,199 +671,91 @@ std::vector<int> filtrar_menores_de (std::vector<int> const & v, int n) {
 ---
 
 ## Paso por Valor y Referencia
-### Referencias y Punteros
-### Copias, Referencias y Movimiento
-## ¿Qué se puede y no se puede hacer?
-### C vs C++
-### clang-tidy
-### clang-format
-## CLion, clang-format, clang-tidy y depurador
+
+- `int x`: Copia x
+- `const int x`: Copia x, no se puede modificar
+- `int & x`: Referencia a x, mutable.
+- `int const & x`: Referencia constante a x, inmutable
+- `int && x`: Paso por movimiento.
+
+Depende del tipo, se pasa por valor o referencia constante:
+- Si es pequeño (`int`, `char`, `long`, `my_vector3`)
+  - Por copia
+- Si es grande, o se tienen que copiar muchos datos (`std::vector`, `std::string`)
+  - Por referencia constante
+
+**NO SE USAN PUNTEROS**
 
 ---
 
-<!-- header: '**¿Qué es C++ moderno?**' -->
-
-## ¿Qué es C++ moderno?
-
-C++ es más que «C con cosas»
-- No todo el código C compila en C++
-    - C es un lenguaje inseguro
-- C++ trae mejoras de _type safety_
-- Usar las cosas nuevas es _opt-in_
+## Estructuración, Espacios de Nombre
 
 ---
 
-### Estándares
-Especificaciones de una versión del lenguaje.
-- Documentación en [cppreference.com](https://en.cppreference.com)
-- Los compiladores son los encargados de implementarlos
-    - Nadie les "obliga"
-    - Puedes ver la compatibilidad en [cppreference](https://en.cppreference.com/w/cpp/compiler_support).
-- Uno nuevo cada 3 años
-    - Actualmente: C++23
+### namespace
+Los espacios de nombre nos permiten agrupar funciones y clases por
+funcionalidad.
 
-Se considera "C++ moderno" a partir de C++11.
-
-
----
-
-### PROHIBIDO
-- _Raw pointers_ - `int* ptr;`
-- _C arrays_ - `int[] arr;`
-- Manipulación manual de memoria - `new` / `malloc()`
-- Librerías de C - `#include <whatever.h>`
-
-Todo esto hace que el código no sea seguro.
-
-
----
-
-
-## Cosas nuevas
-
----
-<!-- header: '**Cosas nuevas**' -->
-
-### [`auto`](https://en.cppreference.com/w/cpp/language/auto)
-Permite al compilador inferir el tipo de una variable.
 ```cpp
-auto x = 1;
+namespace mates {
+   constexpr float π = 3.1415'9265'35;
+   int cuadrado (int x);
+   int raiz (int x);
+}
 ```
 
-Útil al recorrer vectores:
+- Se puede llamar desde fuera como `mates::cuadrado`.
+- Se puede incluir todos los elementos del espacio de nombres.
+
 ```cpp
-for (auto it = vector.begin(); it != vector.end(); ++it) {
-    it->doSomething();
+int pitagoras (int x, int y) {
+   using namespace mates;
+   return raiz(cuadrado(x) + cuadrado(y));                                       
 }
 ```
 
 ---
 
-### `enum class`
-Evolución de `enum`, quitando ciertas limitaciones.
+### .hpp y .cpp
+
+- En el `.hpp` van las declaraciones. En el `.cpp` va la implementación.
+- Puede haber definiciones, por defecto, son _inline_.
+- Al igual que dentro de una clase.
 
 ```cpp
-enum class Color {
-    Red,
-    Green,
-    Blue
-};
-
-auto col = Color::Red;
+class Vector3 {
+   public:
+      // Son inline
+      Vector3(int x, int y, int z) { x_ = x; y_ = y; z_ = z; }
+      Vector3 operator+ (Vector3 rhs) { return {x_ + rhs.x_, y_ + rhs.y_,
+                                                z_ + rhs.z_}; }
+   private:
+      int x_, y_, z_;
+}
 ```
 
 ---
-
-### using
-Evolución de `typedef`.
-
-```cpp
-using Address = std::uint32_t;
-```
 
 ### constexpr
-Evolución de `#define`, teniendo en cuenta el tipo de la variable.
+
+- Son funciones que, por lo general, se calculan en tiempo de compilación. Si es posible.
 
 ```cpp
-constexpr ANSWER = 42;
+constexpr bool is_prime (int n) {
+   for (int i = 2; i * i <= n; ++i) {
+      if (n % i == 0) { return false; }
+   }
+   return true;
+}
+
+template <int length>
+constexpr auto calc_primes () {
+   std::array<int, length> result;
+   int num = 2;
+   for (int i = 0; i < length; num++) {
+      if (is_prime(num)) { result[i++] = num; }
+      else { num; }
+   }
+   return result;
+}
 ```
-
----
-### [Ranged for loops](https://en.cppreference.com/w/cpp/language/range-for)
-Una forma más elegante de recorrer contenedores.
-
-```cpp
-for (auto & elem : myVec) { }
-```
-
-Puedes desempaquetar valores:
-```cpp
-for (auto & [key, value] : myMap) { }
-```
-
-Recuerda usar `const` si no vas a modificar los elementos.
-
-
----
-- `std::static_cast`
-- namespaces
-- lambdas
-- `std::unique_ptr`, `std::shared_ptr`
-
-
----
-
-### Funciones
-- Parameter passing convention
-- Specifiers: contratos autoimpuestos de Jujutsu Kaisen
-
-
----
-
-### Clases
-
-- Constructores
-- miembros públicos/privados/protegidos
-- POR DIOS NO TOQUÉIS LA HERENCIA
-- member function specifiers
-
----
-
-### Contenedores
-Estructuras de datos predefinidas.
-
-#### Métodos genéricos
-- `.size()`: Devuelve el número de elementos
-- `.clear()`: Elimina todos los elementos
-
----
-
-#### [`std::vector`](https://en.cppreference.com/w/cpp/container/vector)
-```cpp
-std::vector<int> myVec {1, 2};  // constructor
-
-myVec.push_back(3);  // añadir un elemento
-```
-
-#### [`std::map`](https://en.cppreference.com/w/cpp/container/map) / [`std::unordered_map`](https://en.cppreference.com/w/cpp/container/unordered_map)
-
-
-#### [`std::tuple`](https://en.cppreference.com/w/cpp/container/tuple)
-
-
----
-<!-- header: '**Estructuración del código**' -->
-
-## Estructuración del código
-
-
----
-<!-- header: '**Templates**' -->
-
-## Templates
-
-
-
-
----
-
-<div class="columns">
-<div>
-
-#### C/C++
-
-```cpp
-Stuff stuff = new Stuff();
-```
-
-</div>
-<div>
-
-#### C++ moderno
-
-```cpp
-auto stuff = Stuff {};
-```
-
-</div>
-</div>
