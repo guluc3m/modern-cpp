@@ -17,16 +17,13 @@ style: |
     }
 ---
 
-<!-- Instalar clang-tidy y clang-format -->
-<!-- readability-identifier-length -->
-<!-- argc y argv -->
-
 
 <!-- _paginate: skip -->
 ![bg contain opacity:.15](img/gul_logo.svg)
 # Introducción a C++ moderno
-Por Luis Daniel Casais Mezquida y  
-Jose Antonio Verde Jiménez
+Por Jose Antonio Verde Jiménez y  
+Luis Daniel Casais Mezquida
+
 
 <br>
 
@@ -41,59 +38,69 @@ _Grupo de Usuarios de Linux_
 <a href="https://github.com/guluc3m/modern-cpp">github.com/guluc3m/modern-cpp</a>
 </center>
 
+
+
 ---
 ## C++ Moderno
+<!-- header: '' -->
 
-<!-- TODO: Mejorar estas dos partes -->
 
-- C++ 17 en adelante
-- C++ es más que «C con cosas»
-- Cuanto menos C mejor
-  - Más seguro
-  - Más rápido
-  - Mejores abstracciones
-  - Fuertemente tipado
-  - Programación funcional
-  - Más más moderno
-  - Los punteros no son necesarios
-- C++ trae mejoras de _type safety_
+- Más que «C con cosas»
+   - Más rápido
+   - Más seguro (memoria, tipado, ...)
+   - Mejores abstracciones
+   - Soporte para programación genérica y funcional
 - Usar las cosas nuevas es _opt-in_
+
+---
+<!-- header: '**C++ Moderno**' -->
+
+### PROHIBIDO
+- _Raw pointers_ - `int* ptr;`
+- _C arrays_ - `int[] arr;`
+- Manipulación manual de memoria - `new` / `malloc()`
+- Librerías de C - `#include <whatever.h>`
+
+Todo esto hace que el código no sea seguro.
+
 
 ---
 
 ### Estándares
-Especificaciones de una versión del lenguaje.
+Especificaciones ISO de una versión del lenguaje.
 - Documentación en [cppreference.com](https://en.cppreference.com)
 - Los compiladores son los encargados de implementarlos
     - Nadie les "obliga"
     - Puedes ver la compatibilidad en [cppreference](https://en.cppreference.com/w/cpp/compiler_support).
 - Uno nuevo cada 3 años
-    - Actualmente: C++23
+    - Actualmente: C++23 (Sept. 2024)
 
-Se considera "C++ moderno" a partir de C++11.
+Se considera "C++ moderno" a partir de C++17.
 
 
 ---
-### CppCoreGuidelines
+### [CppCoreGuidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
 
-- Guía de codificación
+- Guía de codificación de C++
   - Más seguro
   - Pilla más errores a la hora de compilar
   - Por el mismísmo e inigualable **Bjarne Stroustrup**
-- `gsl::span` vs. `std::span`.
+- [`gsl::span`](https://github.com/microsoft/GSL/blob/main/docs/headers.md#user-content-H-span-span) vs. [`std::span`](https://en.cppreference.com/w/cpp/container/span)
+
 
 ---
-### clang-tidy
+### [clang-tidy](https://clang.llvm.org/extra/clang-tidy/)
 
-- Herramienta de clang
+- Herramienta de [clang]((https://clang.llvm.org/))
   - Comprueba que el código se adhiera a una guía de codificación
   - Permite capturar muchos errores en tiempo de compilación
-  - Homogeniza el código escrito por varias personas
+  - Homogeneiza el código escrito por varias personas
 - Añade una capa más de seguridad sobre C++
-- Cualquier proyecto que se respete debe tener una guía de codificación.
+- Cualquier proyecto que se respete debe tener una guía de codificación
+
 
 ---
-### clang-format
+### [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
 
 - Aplica un formato al código
 - Todo el código fuente tiene la misma estructura
@@ -107,8 +114,7 @@ if(x%i==0)return false;} return true;}
 ; for (   int i = from ;    i < to; ++i)
   { if (is_prime(i)) {    result.push_back(i)   }
   }
-; return result;
-}
+; return result;}
 ```
 
 ---
@@ -130,80 +136,270 @@ std::vector<int> prime_numbers (int from, int to) {
 }
 ```
 
+
 ---
-## Entrada y Salida
 
- - Hay dos clases
-   - `std::istream` (Flujo de entrada)
-   - `std::ostream` (Flujo de salida)
- - Por defecto se utilizan para leer y escribir texto:
+## Cosas nuevas
+<!-- header: '' -->
 
+
+
+### [`auto`](https://en.cppreference.com/w/cpp/language/auto)
+Permite al compilador inferir el tipo de una variable.
 ```cpp
-#include <iostream>  // Incluye flujos de entrada y salida (I/O Stream)
-#include <string>    // Contiene el tipo std::string
+auto x = 1;
+```
 
-int main () {
-   // Redirige la cadena "¿Cuántos años tienes?\n" al flujo de
-   // salida estándar `std::cout'.
-   std::cout << "¿Cuántos años tienes?\n";
-   std::string age;
-   // Lee la edad en la variable `age' de entrada estándar.
-   std::cin >> age;
-   // Se pueden imprimir varios tipos:
-   std::cout << "Tienes " << age << " años\n";
-   return 0;
+Útil al recorrer vectores:
+```cpp
+for (auto it = vector.begin(); it != vector.end(); ++it) {
+    it->doSomething();
 }
 ```
 
 ---
-## Entrada y Salida binaria
-Los objetos en memoria se almacenan como una secuencia de bits. Por ejemplo:
+<!-- header: '**Cosas nuevas**' -->
 
+### [`enum class`](https://en.cppreference.com/w/cpp/language/enum)
+Evolución de `enum`, quitando ciertas limitaciones.
+
+```cpp
+enum class Color {
+   Red,
+   Green,
+   Blue
+};
+
+auto col = Color::Red;
+```
+
+
+### [using](https://en.cppreference.com/w/cpp/language/using_declaration)
+Evolución de `typedef`.
+
+```cpp
+using Address = std::uint32_t;
+```
+
+---
+### [Ranged for loops](https://en.cppreference.com/w/cpp/language/range-for)
+Una forma más elegante de recorrer contenedores.
+
+```cpp
+for (auto & elem : myVec) { }
+```
+
+Puedes desempaquetar valores:
+```cpp
+for (auto & [key, value] : myMap) { }
+```
+
+Recuerda usar `const` si no vas a modificar los elementos.
+
+
+---
+
+### [Excepciones](https://en.cppreference.com/w/cpp/language/exceptions)
+Existen. Casi mejor que ni las toques.
+
+Tienes `try`-`catch`:
+
+```cpp
+try {
+   foo[index];
+} catch (std::out_of_range &e) {
+   throw std::exception("cosa mala")
+}
+```
+
+---
+### [Constructores](https://en.cppreference.com/w/cpp/language/constructor)
+- Permiten inicializar los miembros antes de ejecutar el cuerpo (lista después de `:`).
+- **NO SE USA `new`**
+
+E.g.:
+```cpp
+class Foo {
+   public:
+      Foo(int a, int b) : _a {a}, _b {b} { /* body */ }
+
+   private:
+      int _a;
+      int _b;
+}
+
+auto bar = Foo {1, 2};
+```
+
+
+---
+
+## Casting
+<!-- header: '' -->
+
+Consiste en convertir información de un tipo de dato a otro. E.g. `int` → `long`
+
+En C:
+```c
+int foo = 69;
+long var = (int) foo;
+```
+
+Sin embargo esto es **completamente inseguro**.
+
+C++ provee alternativas, las cuales _destacan_:
+- [`reinterpret_cast`](https://en.cppreference.com/w/cpp/language/reinterpret_cast)
+- [`static_cast`](https://en.cppreference.com/w/cpp/language/static_cast)
+
+
+---
+<!-- header: '**Casting**' -->
+
+#### [`reinterpret_cast`](https://en.cppreference.com/w/cpp/language/reinterpret_cast)
+Permite _reinterpretar_ los datos entre punteros de distintos tipos.
+
+En C:
+
+```c
+float x = 42.0;
+float *p_x = &x;
+
+unsigned *p_y = (unsigned*)p_x;
+// `p_y' apunta a la misma dirección que `p_x' (que es `x').
+// Pero para `p_x' la dirección es de tipo `float',
+// y para `p_y' la dirección es de tipo `unsigned int'
+
+unsigned y = *p_y;
+printf("0x%08X\n", y); // Imprime 0x42280000
+```
+
+---
+
+En C++:
+
+```cpp
+float x = 42.0;
+float *p_x = &x;
+
+unsigned *p_y = reinterpret_cast<unsigned*>(p_x);
+
+unsigned y = *p_y;
+std::cout << std::hex << x << "\n"; // Imprime 42
+```
+
+Hay que tener mucho cuidado:
+- Hay requisitos de alineamiento
+- Hay requisitos de tamaño
+- No se puede utilizar con todos los tipos
+- CppCoreGuidelines _lo prohíbe_ (se debe justificar su uso)
+
+---
+
+#### [`static_cast`](https://en.cppreference.com/w/cpp/language/static_cast)
+Hace una conversión «real» entre tipos.
+- `static_cast<int>(42.3)` devuelve `42`
+- `static_cast<float>(32)` devuelve `32.0`
+
+Si existe un operador de conversión, se utiliza:
+- `static_cast<bool>(my_file)` devuelve o `true` o `false`
+
+Hay que tener cuidado con ciertas conversiones ([clang-tidy](https://clang.llvm.org/extra/clang-tidy/) ayuda):
+```cpp
+static_cast<unsigned>(-3);          // No se puede representar
+static_cast<float>(33'554'432);     // Pierde precisión
+static_cast<int>(1.2E100);          // Demasiado grande
+static_cast<int>(7'000'000'000L);   // Demasiado grande
+```
+
+
+
+
+---
+## Entrada y Salida
+<!-- header: '' -->
+
+Hay dos clases principales:
+   - [`std::istream`](https://en.cppreference.com/w/cpp/io/basic_istream) (Flujo de entrada)
+   - [`std::ostream`](https://en.cppreference.com/w/cpp/io/basic_ostream) (Flujo de salida)
+
+Por defecto se utilizan para leer y escribir texto.
+
+Librerías dependiendo del uso:
+- [`<iostream>`](https://en.cppreference.com/w/cpp/header/iostream): stdin/stdout
+- [`<fstream>`](https://en.cppreference.com/w/cpp/header/fstream): Ficheros
+
+
+---
+<!-- header: '**Entrada y Salida**' -->
+
+```cpp
+#include <iostream>  // Incluye flujos de entrada y salida
+                     // (I/O Stream)
+#include <string>    // Contiene el tipo std::string
+
+int main () {
+   // Redirige la cadena "¿Cuántos años tienes?\n" al flujo
+   // de salida estándar `std::cout'.
+   std::cout << "¿Cuántos años tienes?\n";
+   std::string age;
+
+   // Lee la edad en la variable `age' de entrada estándar.
+   std::cin >> age;
+
+   // Se pueden imprimir varios tipos:
+   std::cout << "Tienes " << age << " años\n";
+
+   return 0;
+}
+```
+
+
+---
+### Entrada y Salida binaria
+Los objetos en memoria se almacenan como una secuencia de bytes.
+
+Por ejemplo:
 ```cpp
 int x = 42;
 ```
 
-Depende del computador:
+Dependiendo del computador, puede ser:
 
-- _little-endian_:  `2A 00 00 00`
+- _little-endian_: `2A 00 00 00`
 - _big-endian_: `00 00 00 2A`
 
 (Vamos a suponer _little-endian_)
 
 
 ---
-Por ejemplo un número de coma flotante de simple precisión se representa en memoria en base al estándar IEEE 754.
-
+Un número de coma flotante de simple precisión se representa en memoria en base al estándar IEEE 754.
 ```cpp
 float x = 42.0;
 ```
 
-- En IEEE 754 en hexadecimal es: 42280000<sub>16</sub>
-- En memoria se representa como: `00 00 28 42`
+- En hexadecimal es 42280000<sub>16</sub>
+- En memoria se representa como `00 00 28 42`
 
-De igual manera la cadena `"hola"` se representa como la secuencia de los bytes `'h'`, `'o'`, `'l'`, `'a'`. O, en hexadecimal:
-
-- `68 6f 6c 61`
+De igual manera la cadena `"hola"` se representa como la secuencia bytes `'h'`, `'o'`, `'l'`, `'a'`.
+- En memoria, `68 6f 6c 61`
 
 ---
 
-En un archivo sabemos escribir cadenas.
+En un archivo sabemos escribir _strings_:
 
 ```cpp
 #include <fstream>
-
-int main () {
-   std::ofstream my_output{"my-file.txt"};
-   my_output << 42     << "\n"
-             << 42.0   << "\n"
-             << "hola" << "\n";
-   my_output.close();
-   return 0;
-}
 ```
+```cpp
+std::ofstream my_output{"my-file.txt"};
 
-El archivo queda:
+my_output << 42     << "\n"
+          << 42.0   << "\n"
+          << "hola" << "\n";
 
+my_output.close();
+```
+Lo que resulta en:
 ```plain
 42
 42.0
@@ -212,85 +408,25 @@ hola
 
 ¿Y si en vez de escribir cadenas, escribimos los bytes _a pelo_?
 
----
 
-### Casts
-#### `reinterpret_cast`
-`reinterpret_cast` nos permite convertir entre punteros de distintos tipos.
-
-- En C:
-
-```c
-#include <stdio.h>
-int main () {
-   float x = 42.0;
-   float *p_x = &x;
-   // `p_y' apunta a la misma dirección que `p_x' (que es `x').
-   // Pero para `p_x' la dirección es de tipo `float'.
-   // Y para `p_y' la dirección es de tipo `unsigned int'
-   unsigned *p_y = (unsigned*)p_x;
-   unsigned y = *p_y;
-   printf("0x%08X\n", y); // Imprime 0x42280000
-}
-```
-
-- Sin embargo es **completamente inseguro**.
 
 ---
 
-- En C++, está `reinterpret_cast` que hace lo mismo.
-- Los casts en C++ destacan más.
-
-```cpp
-#include <iostream>
-int main () {
-   float x = 42.0;
-   float *p_x = &x;
-   unsigned *p_y = reinterpret_cast<unsigned*>(p_x);
-   unsigned y = *p_y;
-   std::cout << std::hex << std::uppercase << x << "\n";
-}
-```
-
-- Hay que tener mucho cuidado
-  - Hay requisitos de alineamiento
-  - Hay requisitos de tamaño
-  - No se puede utilizar con todos los tipos.
-  - CppCoreGuidelines lo prohíbe
-  - Se debe justificar su uso
-
----
-#### `static_cast`
-- Hace una conversión «real» entre tipos.
-   - `static_cast<int>(42.3)` devuelve `42`.
-   - `static_cast<float>(32)` devuelve `32.0`.
-- Si existe un operador de conversión, se utiliza:
-   - `static_cast<bool>(my_file)` devuelve o `true` o `false`.
-- Al igual que `reinterpret_cast`, destaca.
-- Hay que tener cuidado con ciertas conversiones (clang-tidy ayuda).
-```cpp
-static_cast<unsigned>(-3);          // No se puede representar
-static_cast<float>(33'554'432);     // Pierde, precisión 25 vs 23 bits
-static_cast<int>(1.2E100);          // Demasiado grande
-static_cast<int>(7'000'000'000L);   // Demasiado grande
-```
-
----
 ### Salida binaria en C++
 
-Empezamos abriendo el archivo:
-- Con constructor
-- Con función miembro
+Empezamos abriendo el archivo, de forma binaria:
 ```cpp
 #include <fstream>
 #include <iostream>
+```
 
-int main () {
+```cpp
 std::ofstream file{"my-file.bin", std::ios::binary};
 // También:
 //    std::ofstream file;
 //    file.open("my-file.bin", std::ios::binary);
-if (not file) {   // Comprobamos que se abrió bien.
+
+if (not file) {   // Comprobamos que se abrió bien
    std::cerr << "No se pudo abrir el archivo\n";
    return -1;
 }
@@ -298,109 +434,129 @@ if (not file) {   // Comprobamos que se abrió bien.
 
 ---
 
-Ahora que tenemos el archivo abierto, podemos escribir distintos valores:
+Ahora podemos escribir distintos valores:
 
 ```cpp
 int int_value = 42; // ¡Número mágico!
 float float_value = 42.0;
 std::string string_value = "hola";
-file.write(reinterpret_cast<const char*>(&int_value), sizeof(int_value));
-file.write(reinterpret_cast<const char*>(&float_value), sizeof(float_value));
-file.write(string_value.data(), string_value.size()); // ¡Conversión implícita!
+
+file.write(
+   reinterpret_cast<const char*>(&int_value),
+   sizeof(int_value)
+); // ¡Reinterpret cast!
+file.write(
+   reinterpret_cast<const char*>(&float_value),
+   sizeof(float_value)
+); // ¡Reinterpret cast!
+file.write(
+   string_value.data(),
+   string_value.size()
+); // Conversión implícita
 ```
 
-La función miembro `std::ostream write` pide dos parámetros de tipos:
- - `const char *`
- - `std::size_t`
-
-De manera similar a la función `fwrite' en C.
-
-_Los errores del clang-tidy están solucionados en el código de ejemplo, se explica más adelante cómo solucionarlos_.
+_peeeero..._
 
 ---
 
-En este caso está justificado el uso del `reinterpret_cast`:
- - Solo existe una función del tipo `write`
-   - Que pide un puntero a una cadena de carácteres (`const char *`)
-   - Y el tamaño de la cadena (`std::size_t`).
- - No se puede hacer de ninguna otra forma.
+**¡Clang-tidy se queja!**
 
-Así que lo comentamos:
+La función miembro [`std::ostream::write`](https://en.cppreference.com/w/cpp/io/basic_ostream/write) pide:
+- Un puntero a una cadena de carácteres (`const char *`)
+- El tamaño de la cadena ([`std::size_t`](https://en.cppreference.com/w/cpp/types/size_t)).
 
-```cpp
-   // Justificamos por qué hemos silenciado al clang-tidy para la siguiente
-   // línea de código. En principio, en lectura y escritura es donde únicamente
-   // está justificado callar al clang-tidy. En otros casos, tiene que estar
-   // MUY justificado. Y se añade a la memoria de cara a la práctica.
-   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   file.write(reinterpret_cast<const char*>(&int_value), sizeof(int_value));
-   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   file.write(reinterpret_cast<const char*>(&float_value), sizeof(float_value));
-   file.write(string_value.data(), string_value.size());
-```
+(similar a la función [`fwrite`](https://en.cppreference.com/w/c/io/fwrite) en C)
+
+En este caso está justificado el uso del [`reinterpret_cast`](https://en.cppreference.com/w/cpp/language/reinterpret_cast).
+- No se puede hacer de ninguna otra forma
+- Hay que silenciar el clang-tidy, justificándolo
 
 ---
-Hay un ejemplo de justificación en (`ejemplos/1-serialización`)
-
-Terminamos cerrando el archivo.
 
 ```cpp
-   file.close();
-   return 0;
-}
+// NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+file.write(
+   reinterpret_cast<const char*>(&int_value),
+   sizeof(int_value)
+);
+
+// NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+file.write(
+   reinterpret_cast<const char*>(&float_value),
+   sizeof(float_value)
+);
+
+file.write(string_value.data(), string_value.size());
+
+file.close(); // ¡Recordad cerrar el archivo!
 ```
 
-Si ejecutamos el programa anterior (`ejemplos/0-serialización`).
+- Sólo está justificado silenciarlo en lectura y escritura
+- En cualquier otro caso, tiene que estar MUY justificado
+
+Ejemplo en [`ejemplos/0-serialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/0-serializaci%C3%B3n/serialise.cpp).
+
+---
+
+Si ejecutamos el programa anterior:
  - Obtenemos un archivo `my-file.bin`
- - Si lo leemos con `hexdump`
+ - Podemos leerlo con [`hexdump`](https://man7.org/linux/man-pages/man1/hexdump.1.html)
 
-> hexdump -C my-file.bin
+```bash
+$ hexdump -C my-file.bin
+```
 
 ```plain
 00000000  2a 00 00 00 00 00 28 42  68 6f 6c 61              |*.....(Bhola|
 0000000c
 ```
 
+
 ---
 ### Entrada binaria en C++
 Es similar a la entrada:
- - `std::ifstream` en vez de `std::ofstream`.
- - `.read()` en vez de `.write()`.
+- [`std::ifstream`](https://en.cppreference.com/w/cpp/io/basic_ifstream) en vez de [`std::ofstream`](https://en.cppreference.com/w/cpp/io/basic_ofstream)
+- [`.read()`](https://en.cppreference.com/w/cpp/io/basic_istream/read) en vez de [`.write()`](https://en.cppreference.com/w/cpp/io/basic_oftream/write)
+
+Recordad manejar los errores.
+
+---
 
 ```cpp
-   // ejemplos/2.deserialización
-   std::ifstream file{"my-file.bin", std::ios::binary};
-   if (not file) {
-      std::cerr << "No se pudo abrir my-file.bin en modo lectura\n";
-      return 1;
-   }
-   int int_value;
-   float float_value;
-   std::string string_value = "    ";
-   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   if (not file.read(reinterpret_cast<char*>(&int_value), sizeof(int_value))) {
-      std::cerr << "No se pudo leer el entero\n";
-      return 2;
-   }
-   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   if (not file.read(reinterpret_cast<char*>(&float_value), sizeof(float_value))) {
-      std::cerr << "No se pudo leer el float\n";
-      return 2;
-   }
-   if (not file.read(string_value.data(), string_value.size())) {
-      return 2;
-   }
+std::ifstream file{"my-file.bin", std::ios::binary};
+if (not file) {
+   std::cerr << "No se pudo abrir el archivo\n";
+}
 ```
----
-## STL y cppreference
-<!-- TODO -->
+```cpp
+float float_value;
+
+if (
+   not file.read(
+      reinterpret_cast<char*>(&float_value),
+      sizeof(float_value)
+   )
+) {
+   std::cerr << "No se pudo leer el float\n";
+}
+```
+
+Ejemplo en [`ejemplos/2-deserialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/2-deserializaci%C3%B3n/deserialise.cpp).
+
+
 
 ---
+<!-- header: '' -->
+
+## Standard Template Library
+Conjunto de contenedores y algoritmos genéricos para ayudar en la programación.
+
+
+---
+<!-- header: '**Standard Template Library**' -->
+
 ### Templates
- - Una _template_ es una plantilla.
-
-<div class="columns">
-<div>
+A veces tenemos que implementar la misma función para distintos tipos:
 
 ```cpp
 void print_square (int x) {
@@ -411,25 +567,16 @@ void print_square (long x) {
    std::cout << x * x << std::endl;
 }
 ```
-
-</div>
-<div>
-
-A veces nos encontramos con que repetimos la misma función para distintos tipos.
-
 ```cpp
 print_square(2);   // Funciona, es `int'
 print_square(2L);  // Funciona, es `long'
 print_square(2.0); // NO FUNCIONA, es `double'
 ```
 
-</div>
-</div>
-
-Para ello usamos templates
 
 ---
 
+Podemos usar una «plantilla» asumiendo un tipo genérico `T`:
 ```cpp
 template <typename T>
 void print_square (T x) {
@@ -439,25 +586,17 @@ void print_square (T x) {
 
  - La `T` se sustituye por el tipo que le pasemos.
    - `print_square<int>(10)`
-   - `print_square(10)`, se deduce el tipo.
- - Si para un tipo no se define alguna función, falla.
- - `print_square<float>` es equivalente a la función:
+   - También se deduce el tipo, e.g. `print_square(10)`
+ - Si para un tipo no se define alguna función, falla
+
+
+`print_square<float>` es equivalente a:
 
 ```cpp
-// T = float
 void print_square (float x) {
    std::cout << x * x << std::endl;
 }
 ```
-
----
-
-- También sirve para estructuras de datos:
- - `std::vector<int>`
- - `std::vector<my_type>`...
- - `std::vector<std::vector<std::string>>`
-- Todas las funciones de la clase se definen para el tipo del _template_
-- En C, tendríamos que usar `void*` o definirlo para cada posible tipo. Y para cada posible operación.
 
 ---
 
@@ -466,19 +605,30 @@ Podemos generalizar la función de lectura y escritura de antes:
 ```cpp
 template <typename T>
 void write (std::ostream & out, T const & value) {
-   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   out.write(reinterpret_cast<const char*>(&value), sizeof(T));
+   out.write(
+      reinterpret_cast<const char*>(&value),
+      sizeof(T)
+   );
 }
 
-// Podemos especializar para std::string
+// Especializamos para std::string
 void write (std::ostream & out, std::string const & value) {
-   out.write(value.data(), static_cast<std::streamsize>(value.size()));
+   out.write(
+      value.data(),
+      static_cast<std::streamsize>(value.size())
+   );
 }
+```
 
+---
+
+```cpp
 template <typename T>
 bool read (std::istream & in, T & value) {
-   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-   return static_cast<bool>(in.read(reinterpret_cast<char *>(&value), sizeof(T)));
+   return static_cast<bool>(
+      in.read(reinterpret_cast<char *>(&value),
+      sizeof(T))
+   );
 }
 
 bool read (std::istream & in, std::string & str, int length) {
@@ -488,161 +638,194 @@ bool read (std::istream & in, std::string & str, int length) {
 ```
 ---
 
-Y ya lo podemos usar en cualquier momento.
+Y ya lo podemos usar en cualquier momento:
 
 ```cpp
 constexpr int solution{42};
+```
 
-bool write_data () {
-  // Write
-  std::ofstream output_file{"data.bin", std::ios::binary};
-  if (not output_file) {
-     std::cerr << "No se pudo crear data.bin\n";
-     return false;
-  }
-  write(output_file, solution);
-  write(output_file, static_cast<float>(solution));
-  write(output_file, std::string{"hola"});
-  output_file.close();
-  return true;
-}
+```cpp
+std::ofstream output_file{"data.bin", std::ios::binary};
+if (not output_file) { /* ... */ }
 
-bool read_data () {
-  // Read
-  std::ifstream input_file{"data.bin", std::ios::binary};
-  if (not input_file) {
-     std::cerr << "No se pudo abrir data.bin\n";
-     return false;
-  }
-  int int_value{};
-  float float_value{};
-  std::string string_value{};
-  if (not read(input_file, int_value) or not read(input_file, float_value)
-      or not read(input_file, string_value, 4))
-  {
-     std::cerr << "No se pudo leer los contenidos de data.bin\n";
-     return false;
-  }
-  std::cout << int_value << "\n" << float_value << "\n" << string_value << "\n";
-  input_file.close();
-  return true;
-}
+write(output_file, solution);
+write(output_file, static_cast<float>(solution));
+write(output_file, std::string{"hola"});
+
+output_file.close();
 ```
 
 ---
 
-<center><h1><b>STL</b></h1><br/>
-<b>Standard Template Library</b>
-</center>
+```cpp
+std::ifstream input_file{"data.bin", std::ios::binary};
+if (not input_file) { /* ... */ }
+
+int int_value{};
+float float_value{};
+std::string string_value{};
+
+if (
+   not read(input_file, int_value) or
+   not read(input_file, float_value) or
+   not read(input_file, string_value, 4))
+{ /* ... */ }
+
+std::cout << int_value    << "\n"
+          << float_value  << "\n"
+          << string_value << "\n";
+
+input_file.close();
+```
+
+Ejemplo en [`ejemplos/3-templates`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/3-templates/templates.cpp).
 
 ---
 
-<center> <link href=https://en.cppreference.com/w/>https://en.cppreference.com/w/</link></center>
+### Contenedores
+
+Estructuras de datos genéricas.
+
+Implementan dos funciones miembro básicas:
+- `.size()`: Devuelve el tamaño de la estructura
+- `.clear()`: Vacía la estructura
 
 ---
 
-### Estructuras de datos
-#### `std::vector`
+#### [`std::vector`](https://en.cppreference.com/w/cpp/container/vector)
 
 Constructores:
 ```cpp
-constexpr inf = std::numeric_limits<int>::max();
-std::vector<float> mis_notas{8.5, 7.6, 0.5, 9.1};
-std::vector<float> tus_notas(4, 0.0);  // Vector con cuatro ceros.
-std::vector<std::vector<int>> vuelos {
-   {  0, inf,   1,   4,   2}
-   {inf,   0,   3,   4,   3}
-   {  1,   3,   0, inf,   3}
-   {  2,   8,   2,   0,   1}
-   {  3,   2,   1,   4,   0}};
-std::vector<std::string> ciudades{"Madrid", "Nueva York", "París", "Roma", "Tokio"};
-for (auto const & ciudad : ciudades)
-   std::cout << ciudad << "\n";
+std::vector<float> tus_notas(3, 0.0);  // {0.0, 0.0, 0.0}
+
+std::vector<std::string> ciudades {
+   "Madrid",
+   "Nueva York",
+   "París"
+};
 ```
 
-Funciones Miembro
- - `.push_back()` y `.emplace_back()`
- - `.reserve()`
- - `operator[]`
- - Más en cppreference
+
+Se pueden recorrer con [_ranged for loops_](https://en.cppreference.com/w/cpp/language/range-for):
+```cpp
+for (auto const & ciudad : ciudades) {
+   std::cout << ciudad << "\n";
+}
+```
 
 ---
 
-#### `std::tuple` y `std::pair`
+Funciones Miembro:
+- [`operator[]`](https://en.cppreference.com/w/cpp/container/vector/operator_at) y [`.at()`](https://en.cppreference.com/w/cpp/container/vector/at): Acceso al elemento _i_
+- [`.push_back()`](https://en.cppreference.com/w/cpp/container/vector/push_back) y [`.emplace_back()`](https://en.cppreference.com/w/cpp/container/vector/emplace_back): Añaden un elemento al final del vector
+- [`.reserve()`](https://en.cppreference.com/w/cpp/container/vector/reserve): Pre-reservan espacio para el vector
 
-`std::pair` es una `std::tuple` de dos elementos. Y tiene los miembros:
- - `.first`
- - `.second`
 ```cpp
-using mi_tipo = std::tuple<std::string, int, double>;
-mi_tipo mi_objeto = mi_tipo{"hola", 42, 42.0};
-// Descomponer
-auto [str_v, int_v, flt_v] = mi_objeto;
-// También
-auto str_v = std::get<1>(mi_objeto);
-auto int_v = std::get<2>(mi_objeto);
-auto flt_v = std::get<3>(mi_objeto);
-// Con vectors
-std::vector<std::pair<std::string, int>> ciudades {
-   {"Madrid", 1}, {"Nueva York", 2}, {"París", 3}, {"Roma", 4}, {"Tokio", 5}};
-// Descomponer al iterar
-for (auto const & [nombre, id] : ciudades) {
+ciudades.push_back("Murcia");
+
+tus_notas[1] = 0.1;
+```
+
+---
+
+#### [`std::tuple`](https://en.cppreference.com/w/cpp/utility/tuple)
+
+Una colección de datos de múltiples tipos.
+
+Útiles para retornar de funciones, ya que se pueden desacoplar elegantemente.
+
+```cpp
+#include <tuple>
+```
+```cpp
+std::tuple<std::string, int, double> foo() {
+   return {"hola", 42, 42.0};
+}
+
+auto [str_v, int_v, flt_v] = foo();
+```
+
+---
+
+#### [`std::map`](https://en.cppreference.com/w/cpp/container/map) / [`std::unordered_map`](https://en.cppreference.com/w/cpp/container/unordered_map)
+
+Contiene pares clave-valor con claves únicas.
+
+- [`std::map`](https://en.cppreference.com/w/cpp/container/map) implementa un árbol de búsqueda binario
+- [`std::unordered_map`](https://en.cppreference.com/w/cpp/container/unordered_map) implementa un _hash map_
+
+```cpp
+#include <map>
+```
+```cpp
+std::map<int, std::string> ciudades {
+   {1, "Madrid"},
+   {2, "Nueva York"},
+   {3, "París"}
+};
+```
+
+---
+
+Funciones miembro:
+
+- [`operator[]`](https://en.cppreference.com/w/cpp/container/map/operator_at): Acceso al valor asociado a la clave.
+- [`.at()`](https://en.cppreference.com/w/cpp/container/map/at): Devuelve el valor asociado a la clave.  
+  Si no existe, lanza una excepción
+- [`.contains()`](https://en.cppreference.com/w/cpp/container/map/contains): Comprueba si una clave existe
+
+```cpp
+ciudades[4] = "Murcia";
+std::string mi_fav = ciudades.at(1);
+if (ciudades.contains(3)) { /* ... */ }
+```
+
+También se pueden iterar y desacoplar fácilmente:
+
+```cpp
+for (auto const & [id, nombre] : ciudades) {
    std::cout << nombre << " " << id "\n";
 }
 ```
 
 ---
 
-#### `std::map` y `std::unordered_map`
+### [Algoritmos](https://en.cppreference.com/w/cpp/algorithm)
 
-Como los diccionarios de Python.
-
-- `std::map`, árbol de búsqueda binario
-- `std::unordered_map`, _hash map_
+- Ordenar, [`std::sort(inicio, fin, predicado)`](https://en.cppreference.com/w/cpp/algorithm/sort)
+- Mapear, [`std::transform(inicio, fin, salida, operación)`](https://en.cppreference.com/w/cpp/algorithm/transform)
+- Reducir, [`std::accumulate(inicio, fin, primero, función)`](https://en.cppreference.com/w/cpp/algorithm/accumulate)
+- Filtrar, [`std::copy_if(inicio, fin, salida, predicado)`](https://en.cppreference.com/w/cpp/algorithm/copy)
 
 ---
-
-### Algoritmos
-https://en.cppreference.com/w/cpp/algorithm
- - Ordenar, `std::sort(inicio, fin, predicado)`
- - Mapear, `std::transform(inicio, fin, salida, operación)`
- - Reducir, `std::accumulate(inicio, fin, primero, función)`
- - Filtrar, `std::copy_if(inicio, fin, salida, predicado)`
 
 ```cpp
 bool mayor_a_menor (int x, int y) { return x > y; }
 int cuadrado (int x) { return x * x; }
 int producto (int a, int b) { return a * b; }
-int main () {
-   std::vector<int> valores{1, 3, 4, 5, 2};
-   // Ordena los valores, haz el cuadrado de ellos, y multiplícalos.
-   std::sort(valores.begin(), valores.end(), mayor_a_menor);
-   std::transform(valores.begin(), valores.end(), valores.begin(), cuadrado);
-   std::cout << std::accumulate(valores.begin(), valores.end(), 1, producto); << "\n";
-   return 0;
-}
+
+std::vector<int> valores{1, 3, 4, 5, 2};
+
+// Ordena los valores, haz el cuadrado de ellos, y multiplícalos.
+std::sort(valores.begin(), valores.end(), mayor_a_menor);
+std::transform(valores.begin(), valores.end(), valores.begin(), cuadrado);
+int result = std::accumulate(valores.begin(), valores.end(), 1, producto);
 ```
 
 ---
 
 ### Funciones lambda y predicados
-En vez de definir una las funciones por separado:
+Funciones sin nombre, que se crean en el momento.
 
+Útiles en combinación con algoritmos:
 ```cpp
-bool mayor_a_menor (int x, int y) { return x > y; }
-int cuadrado (int x) { return x * x; }
-int producto (int a, int b) { return a * b; }
-```
+// bool mayor_a_menor (int x, int y) { return x > y; }
 
-Podemos usar **funciones lambda**, o funciones anónimas
-
-```cpp
-std::sort(valores.begin(), valores.end(),
-   [](int a, int b){ return a > b; });
-std::transform(valores.begin(), valores.end(), valores.begin(),
-   [](int x){ return x * x });
-std::cout << std::accumulate(valores.begin(), valores.end(), 1,
-   [](int a, int b) { return a * b; }); << "\n";
+std::sort(
+   valores.begin(),
+   valores.end(),
+   [](int a, int b){ return a > b; }
+);
 ```
 
 ---
@@ -669,76 +852,37 @@ std::vector<int> filtrar_menores_de (std::vector<int> const & v, int n) {
 ```
 
 ---
+<!-- header: '' -->
 
-## Paso por Valor y Referencia
+## Funciones
 
-- `int x`: Copia x
-- `const int x`: Copia x, no se puede modificar
-- `int & x`: Referencia a x, mutable.
-- `int const & x`: Referencia constante a x, inmutable
-- `int && x`: Paso por movimiento.
+### Paso de parámetros
+
+- `T x`: Copia `x`
+- `const T x`: Copia `x`, no se puede modificar
+- `T & x`: Referencia a `x`, mutable.
+- `T const & x`: Referencia a `x`, inmutable
+- `T && x`: Paso por movimiento
+
 
 Depende del tipo, se pasa por valor o referencia constante:
-- Si es pequeño (`int`, `char`, `long`, `my_vector3`)
-  - Por copia
-- Si es grande, o se tienen que copiar muchos datos (`std::vector`, `std::string`)
-  - Por referencia constante
+- Si es pequeño (`int`, `char`, `long`, `my_vector3`): **copia**
+- Si es grande, o se tienen que copiar muchos datos (`std::vector`, `std::string`): **referencia constante**
 
-**NO SE USAN PUNTEROS**
 
 ---
+<!-- header: '**Funciones**' -->
 
-## Estructuración, Espacios de Nombre
 
----
+### Especificadores
+Contratos con las funciones, para que sean más óptimas.
 
-### namespace
-Los espacios de nombre nos permiten agrupar funciones y clases por
-funcionalidad.
-
-```cpp
-namespace mates {
-   constexpr float π = 3.1415'9265'35;
-   int cuadrado (int x);
-   int raiz (int x);
-}
-```
-
-- Se puede llamar desde fuera como `mates::cuadrado`.
-- Se puede incluir todos los elementos del espacio de nombres.
-
-```cpp
-int pitagoras (int x, int y) {
-   using namespace mates;
-   return raiz(cuadrado(x) + cuadrado(y));                                       
-}
-```
+- [`noexcept`](https://en.cppreference.com/w/cpp/language/noexcept_spec): La función no va a lanzar ninguna excepción. Si lo hace... _cagaste_
+- [`[[nodiscard]]`](https://en.cppreference.com/w/cpp/language/attributes/nodiscard): Vas a capturar lo que devuelve la función
+- [`inline`](https://en.cppreference.com/w/cpp/language/inline): Quita el _overhead_ de una llamada a función. No lo uses con funciones recursivas
+- [`constexpr`](https://en.cppreference.com/w/cpp/language/constexpr): Son funciones que, por lo general, se calculan en tiempo de compilación. No las uses con bloques `try`-`catch`.
 
 ---
-
-### .hpp y .cpp
-
-- En el `.hpp` van las declaraciones. En el `.cpp` va la implementación.
-- Puede haber definiciones, por defecto, son _inline_.
-- Al igual que dentro de una clase.
-
-```cpp
-class Vector3 {
-   public:
-      // Son inline
-      Vector3(int x, int y, int z) { x_ = x; y_ = y; z_ = z; }
-      Vector3 operator+ (Vector3 rhs) { return {x_ + rhs.x_, y_ + rhs.y_,
-                                                z_ + rhs.z_}; }
-   private:
-      int x_, y_, z_;
-}
-```
-
----
-
-### constexpr
-
-- Son funciones que, por lo general, se calculan en tiempo de compilación. Si es posible.
 
 ```cpp
 constexpr bool is_prime (int n) {
@@ -759,3 +903,61 @@ constexpr auto calc_primes () {
    return result;
 }
 ```
+
+
+
+
+---
+<!-- header: '' -->
+
+## Estructuración del código
+
+---
+<!-- header: '**Estructuración del código**' -->
+
+### namespace
+Los espacios de nombre nos permiten agrupar funciones y clases por
+funcionalidad.
+
+```cpp
+namespace mates {
+   constexpr float π = 3.1415'9265'35;
+   int cuadrado (int x);
+   int raiz (int x);
+}
+```
+
+- Se puede llamar desde fuera como `mates::cuadrado`.
+
+---
+- Se puede incluir todos los elementos del espacio de nombres.
+
+```cpp
+int pitagoras (int x, int y) {
+   using namespace mates;
+   return raiz(cuadrado(x) + cuadrado(y));
+}
+```
+
+---
+
+### .hpp y .cpp
+
+- En el `.hpp` van las declaraciones. En el `.cpp` va la implementación.
+- Puede haber definiciones, por defecto, son _inline_.
+- Al igual que dentro de una clase.
+
+
+---
+
+<!-- _paginate: skip -->
+![bg contain opacity:.15](img/gul_logo.svg)
+# Introducción a C++ moderno
+Por Jose Antonio Verde Jiménez y  
+Luis Daniel Casais Mezquida
+
+
+<br>
+
+_Grupo de Usuarios de Linux_
+[@guluc3m](https://twitter.com/guluc3m) | [gul.uc3m.es](https://gul.uc3m.es)
