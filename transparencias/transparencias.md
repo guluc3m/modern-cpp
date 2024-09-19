@@ -107,19 +107,19 @@ Se considera "C++ moderno" a partir de C++17.
 Si no, cada uno escribe el código como le parezca:
 
 ```cpp
-   bool is_prime(int x){for(int i=2;i*i<=x;++i){
+    bool is_prime(int x){for(int i=2;i*i<=x;++i){
 if(x%i==0)return false;} return true;}
  std::vector<int> prime_numbers ( int   from,   int to )
 { std::vector<int>   result
 ; for (   int i = from ;    i < to; ++i)
   { if (is_prime(i)) {    result.push_back(i)   }
-  }
+   }
 ; return result;}
 ```
 
 ---
 
-Con clang-format:
+Con [clang-format](https://clang.llvm.org/docs/ClangFormat.html):
 ```cpp
 bool is_prime (int x) {
    for (int i = 2; i * i <= x; ++i) {
@@ -162,7 +162,7 @@ for (auto it = vector.begin(); it != vector.end(); ++it) {
 <!-- header: '**Cosas nuevas**' -->
 
 ### [`enum class`](https://en.cppreference.com/w/cpp/language/enum)
-Evolución de `enum`, quitando ciertas limitaciones.
+Evolución de [`enum`](https://en.cppreference.com/w/c/language/enum), quitando ciertas limitaciones.
 
 ```cpp
 enum class Color {
@@ -176,7 +176,7 @@ auto col = Color::Red;
 
 
 ### [`using`](https://en.cppreference.com/w/cpp/language/using_declaration)
-Evolución de `typedef`.
+Evolución de [`typedef`](https://en.cppreference.com/w/cpp/language/typedef).
 
 ```cpp
 using Address = std::uint32_t;
@@ -195,7 +195,7 @@ Puedes desempaquetar valores:
 for (auto & [key, value] : myMap) { }
 ```
 
-Recuerda usar `const` si no vas a modificar los elementos.
+Recuerda usar [`const`](https://en.cppreference.com/w/cpp/language/cv) si no vas a modificar los elementos.
 
 
 ---
@@ -215,7 +215,8 @@ try {
 
 ---
 ### [Constructores](https://en.cppreference.com/w/cpp/language/constructor)
-- Permiten inicializar los miembros antes de ejecutar el cuerpo (lista después de `:`).
+Se ejecutan al instanciar una clase.
+- Permiten inicializar los miembros antes de la clase (`:`)
 
 E.g.:
 ```cpp
@@ -242,7 +243,7 @@ Consiste en convertir información de un tipo de dato a otro. E.g. `int` → `lo
 En C:
 ```c
 int foo = 69;
-long var = (int) foo;
+long var = (long) foo;
 ```
 
 Sin embargo, esto es **completamente inseguro**.
@@ -290,7 +291,8 @@ std::cout << std::hex << x << "\n"; // Imprime 42
 Hay que tener mucho cuidado:
 - Hay requisitos de tamaño y de alineamiento
 - No se puede utilizar con todos los tipos
-- [CppCoreGuidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) **lo prohíbe** (se debe justificar su uso)
+- [CppCoreGuidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) **lo prohíbe**
+   - Se debe justificar su uso
 
 ---
 
@@ -304,10 +306,10 @@ Si existe un operador de conversión, se utiliza:
 
 Hay que tener cuidado con ciertas conversiones ([clang-tidy](https://clang.llvm.org/extra/clang-tidy/) ayuda):
 ```cpp
-static_cast<unsigned>(-3);          // No se puede representar
-static_cast<float>(33'554'432);     // Pierde información
-static_cast<int>(1.2E100);          // Demasiado grande
-static_cast<int>(7'000'000'000L);   // Demasiado grande
+static_cast<unsigned>(-3);        // No se puede representar
+static_cast<float>(33'554'432);   // Pierde información
+static_cast<int>(1.2E100);        // Demasiado grande
+static_cast<int>(7'000'000'000L); // Demasiado grande
 ```
 
 
@@ -338,11 +340,11 @@ Bibliotecas dependiendo del uso:
 
 int main () {
    // Redirige la cadena "¿Cuántos años tienes?\n" al flujo
-   // de salida estándar `std::cout'.
+   // de salida estándar `std::cout'
    std::cout << "¿Cuántos años tienes?\n";
    std::string age;
 
-   // Lee la edad en la variable `age' de entrada estándar.
+   // Lee la edad en la variable `age' de entrada estándar
    std::cin >> age;
 
    // Se pueden imprimir varios tipos:
@@ -449,7 +451,7 @@ file.write(
 file.write(
    string_value.data(),
    string_value.size()
-); // ¡Conversión implícita!
+); // Conversión implícita
 ```
 
 _peeeero..._
@@ -489,7 +491,7 @@ file.close(); // ¡Recordad cerrar el archivo!
 ```
 
 - Solo está justificado silenciarlo en lectura y escritura
-- En cualquier otro caso, tiene que estar MUY justificado
+- En cualquier otro caso, tiene que estar **muy** justificado
 
 Ejemplo completo en [`ejemplos/0-serialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/0-serializaci%C3%B3n/serialise.cpp).
 
@@ -580,7 +582,7 @@ void print_square (T x) {
 }
 ```
 
- - La `T` se sustituye por el tipo que le pasemos.
+ - La `T` se sustituye por el tipo que le pasemos:
    - `print_square<int>(10)`
    - También se deduce el tipo, e.g. `print_square(10)`
  - Si para un tipo no se define alguna función, falla
@@ -868,13 +870,13 @@ auto filtrar_menores_de (std::vector<int> const & v, int n) {
 
 - `T x`: Copia `x`
 - `const T x`: Copia `x`, no se puede modificar
-- `T & x`: Referencia a `x`, mutable.
+- `T & x`: Referencia a `x`, mutable
 - `T const & x`: Referencia a `x`, inmutable
 - `T && x`: Paso por movimiento
 
 
 Depende del tipo, se pasa por valor o referencia constante:
-- Si es pequeño (`int`, `char`, `long`, `my_vector3`): **copia**
+- Si es pequeño (`int`, `char`, pequeños `struct`): **copia**
 - Si es grande, o se tienen que copiar muchos datos (`std::vector`, `std::string`): **referencia constante**
 
 
@@ -935,14 +937,13 @@ namespace mates {
 ```
 
 - Se puede llamar desde fuera como `mates::cuadrado`.
-- Se puede incluir todos los elementos del espacio de nombres.
-
-```cpp
-int pitagoras (int x, int y) {
+- Se puede incluir todos los elementos del espacio de nombres con `using`:
+   ```cpp
    using namespace mates;
-   return raiz(cuadrado(x) + cuadrado(y));
-}
-```
+   int pitagoras (int x, int y) {
+      return raiz(cuadrado(x) + cuadrado(y));
+   }
+   ```
 
 ---
 
@@ -950,8 +951,7 @@ int pitagoras (int x, int y) {
 
 En el _header_ van las _declaraciones_. En el _source_ van las _definiciones_ (implementación).
 - En el _header_ puede haber definiciones pero, por defecto, son _inline_
-- Las definiciones de una clase si están dentro del header son **siempre**
-  inline.
+- Las definiciones de una clase si están dentro del header son **siempre** inline
 - Constructores y macros en _header_
 - Usa _guards_ en los _header_ (`#ifndef LIB_HPP`, `#define LIB_HPP`) para prevenir duplicados
 - Al definir funciones miembro en el _source_, hay que especificar la clase: `MyClass::my_method() {}`
