@@ -221,11 +221,11 @@ E.g.:
 ```cpp
 class Foo {
    public:
-      Foo(int a, int b) : _a {a}, _b {b} { /* body */ }
+      Foo(int a, int b) : a_ {a}, b_ {b} { /* body */ }
 
    private:
-      int _a;
-      int _b;
+      int a_;
+      int b_;
 }
 
 auto bar = Foo {1, 2};
@@ -305,7 +305,7 @@ Si existe un operador de conversión, se utiliza:
 Hay que tener cuidado con ciertas conversiones ([clang-tidy](https://clang.llvm.org/extra/clang-tidy/) ayuda):
 ```cpp
 static_cast<unsigned>(-3);          // No se puede representar
-static_cast<float>(33'554'432);     // Pierde precisión
+static_cast<float>(33'554'432);     // Pierde información
 static_cast<int>(1.2E100);          // Demasiado grande
 static_cast<int>(7'000'000'000L);   // Demasiado grande
 ```
@@ -323,7 +323,7 @@ Hay dos clases principales:
 
 Por defecto se utilizan para leer y escribir texto.
 
-Librerías dependiendo del uso:
+Bibliotecas dependiendo del uso:
 - [`<iostream>`](https://en.cppreference.com/w/cpp/header/iostream): stdin/stdout
 - [`<fstream>`](https://en.cppreference.com/w/cpp/header/fstream): Ficheros
 
@@ -449,7 +449,7 @@ file.write(
 file.write(
    string_value.data(),
    string_value.size()
-); // Conversión implícita
+); // ¡Conversión implícita!
 ```
 
 _peeeero..._
@@ -488,7 +488,7 @@ file.write(string_value.data(), string_value.size());
 file.close(); // ¡Recordad cerrar el archivo!
 ```
 
-- Sólo está justificado silenciarlo en lectura y escritura
+- Solo está justificado silenciarlo en lectura y escritura
 - En cualquier otro caso, tiene que estar MUY justificado
 
 Ejemplo completo en [`ejemplos/0-serialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/0-serializaci%C3%B3n/serialise.cpp).
@@ -601,8 +601,8 @@ Generalicemos las funciónes de lectura y escritura:
 ```cpp
 template <typename T>
 void write (std::ostream & out, T const & value) {
-   out.write(
-      reinterpret_cast<const char*>(&value),
+   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+   out.write(reinterpret_cast<const char*>(&value),
       sizeof(T)
    );
 }
@@ -621,8 +621,8 @@ void write (std::ostream & out, std::string const & value) {
 ```cpp
 template <typename T>
 bool read (std::istream & in, T & value) {
-   return static_cast<bool>(
-      in.read(reinterpret_cast<char *>(&value),
+   // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+   return static_cast<bool>(in.read(reinterpret_cast<char *>(&value),
       sizeof(T))
    );
 }
@@ -887,8 +887,8 @@ Contratos con las funciones, para que sean más óptimas.
 
 - [`noexcept`](https://en.cppreference.com/w/cpp/language/noexcept_spec): La función no va a lanzar ninguna excepción. Si lo hace... _cagaste_
 - [`[[nodiscard]]`](https://en.cppreference.com/w/cpp/language/attributes/nodiscard): Vas a capturar lo que devuelve la función
-- [`inline`](https://en.cppreference.com/w/cpp/language/inline): Quita el _overhead_ de una llamada a función. No lo uses con funciones recursivas
-- [`constexpr`](https://en.cppreference.com/w/cpp/language/constexpr): Son funciones que, por lo general, se calculan en tiempo de compilación. No las uses con bloques `try`-`catch`.
+- [`inline`](https://en.cppreference.com/w/cpp/language/inline): _A veces_, si la función es lo suficientemente pequeña, se copia en vez de llamarla
+- [`constexpr`](https://en.cppreference.com/w/cpp/language/constexpr): Son funciones que, por lo general, se ejecutan en tiempo de compilación. No las uses con bloques `try`-`catch`.
 
 ---
 
