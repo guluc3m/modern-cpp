@@ -950,6 +950,8 @@ int pitagoras (int x, int y) {
 
 En el _header_ van las _declaraciones_. En el _source_ van las _definiciones_ (implementación).
 - En el _header_ puede haber definiciones pero, por defecto, son _inline_
+- Las definiciones de una clase si están dentro del header son **siempre**
+  inline.
 - Constructores y macros en _header_
 - Usa _guards_ en los _header_ (`#ifndef LIB_HPP`, `#define LIB_HPP`) para prevenir duplicados
 - Al definir funciones miembro en el _source_, hay que especificar la clase: `MyClass::my_method() {}`
