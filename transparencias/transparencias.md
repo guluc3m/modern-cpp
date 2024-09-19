@@ -6,15 +6,15 @@ paginate: true
 size: 4:3
 math: mathjax
 style: |
-    img[alt~="center"] {
-        display: block;
-        margin: 0 auto;
-    }
-    .columns {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-    }
+   img[alt~="center"] {
+      display: block;
+      margin: 0 auto;
+   }
+   .columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+   }
 ---
 
 
@@ -65,13 +65,12 @@ Todo esto hace que el código no sea seguro.
 
 
 ---
-
 ### Estándares
 Especificaciones ISO de una versión del lenguaje.
 - Documentación en [cppreference.com](https://en.cppreference.com)
 - Los compiladores son los encargados de implementarlos
     - Nadie les "obliga"
-    - Puedes ver la compatibilidad en [cppreference](https://en.cppreference.com/w/cpp/compiler_support).
+    - Puedes ver la compatibilidad en [cppreference](https://en.cppreference.com/w/cpp/compiler_support)
 - Uno nuevo cada 3 años
     - Actualmente: C++23 (Sept. 2024)
 
@@ -84,7 +83,7 @@ Se considera "C++ moderno" a partir de C++17.
 - Guía de codificación de C++
   - Más seguro
   - Pilla más errores a la hora de compilar
-  - Por el mismísmo e inigualable **Bjarne Stroustrup**
+  - Por el mismísmo e inigualable [Bjarne Stroustrup](https://www.stroustrup.com/)
 - [`gsl::span`](https://github.com/microsoft/GSL/blob/main/docs/headers.md#user-content-H-span-span) vs. [`std::span`](https://en.cppreference.com/w/cpp/container/span)
 
 
@@ -102,9 +101,10 @@ Se considera "C++ moderno" a partir de C++17.
 ---
 ### [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
 
-- Aplica un formato al código
+- Aplica automáticamente un formato al código
 - Todo el código fuente tiene la misma estructura
-- Si no, cada uno escribe el código como le parezca:
+
+Si no, cada uno escribe el código como le parezca:
 
 ```cpp
    bool is_prime(int x){for(int i=2;i*i<=x;++i){
@@ -119,6 +119,7 @@ if(x%i==0)return false;} return true;}
 
 ---
 
+Con clang-format:
 ```cpp
 bool is_prime (int x) {
    for (int i = 2; i * i <= x; ++i) {
@@ -147,7 +148,7 @@ std::vector<int> prime_numbers (int from, int to) {
 ### [`auto`](https://en.cppreference.com/w/cpp/language/auto)
 Permite al compilador inferir el tipo de una variable.
 ```cpp
-auto x = 1;
+auto x = 1; // int
 ```
 
 Útil al recorrer vectores:
@@ -174,7 +175,7 @@ auto col = Color::Red;
 ```
 
 
-### [using](https://en.cppreference.com/w/cpp/language/using_declaration)
+### [`using`](https://en.cppreference.com/w/cpp/language/using_declaration)
 Evolución de `typedef`.
 
 ```cpp
@@ -215,7 +216,6 @@ try {
 ---
 ### [Constructores](https://en.cppreference.com/w/cpp/language/constructor)
 - Permiten inicializar los miembros antes de ejecutar el cuerpo (lista después de `:`).
-- **NO SE USA `new`**
 
 E.g.:
 ```cpp
@@ -245,7 +245,7 @@ int foo = 69;
 long var = (int) foo;
 ```
 
-Sin embargo esto es **completamente inseguro**.
+Sin embargo, esto es **completamente inseguro**.
 
 C++ provee alternativas, las cuales _destacan_:
 - [`reinterpret_cast`](https://en.cppreference.com/w/cpp/language/reinterpret_cast)
@@ -288,10 +288,9 @@ std::cout << std::hex << x << "\n"; // Imprime 42
 ```
 
 Hay que tener mucho cuidado:
-- Hay requisitos de alineamiento
-- Hay requisitos de tamaño
+- Hay requisitos de tamaño y de alineamiento
 - No se puede utilizar con todos los tipos
-- CppCoreGuidelines _lo prohíbe_ (se debe justificar su uso)
+- [CppCoreGuidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) **lo prohíbe** (se debe justificar su uso)
 
 ---
 
@@ -388,9 +387,6 @@ De igual manera la cadena `"hola"` se representa como la secuencia bytes `'h'`, 
 En un archivo sabemos escribir _strings_:
 
 ```cpp
-#include <fstream>
-```
-```cpp
 std::ofstream my_output{"my-file.txt"};
 
 my_output << 42     << "\n"
@@ -399,7 +395,8 @@ my_output << 42     << "\n"
 
 my_output.close();
 ```
-Lo que resulta en:
+
+Lo que resulta en `my-file.txt`:
 ```plain
 42
 42.0
@@ -467,9 +464,9 @@ La función miembro [`std::ostream::write`](https://en.cppreference.com/w/cpp/io
 
 (similar a la función [`fwrite`](https://en.cppreference.com/w/c/io/fwrite) en C)
 
-En este caso está justificado el uso del [`reinterpret_cast`](https://en.cppreference.com/w/cpp/language/reinterpret_cast).
+En este caso está justificado el uso del [`reinterpret_cast`](https://en.cppreference.com/w/cpp/language/reinterpret_cast):
 - No se puede hacer de ninguna otra forma
-- Hay que silenciar el clang-tidy, justificándolo
+- Hay que silenciar el clang-tidy (con `NOLINTNEXTLINE`), justificándolo
 
 ---
 
@@ -494,13 +491,13 @@ file.close(); // ¡Recordad cerrar el archivo!
 - Sólo está justificado silenciarlo en lectura y escritura
 - En cualquier otro caso, tiene que estar MUY justificado
 
-Ejemplo en [`ejemplos/0-serialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/0-serializaci%C3%B3n/serialise.cpp).
+Ejemplo completo en [`ejemplos/0-serialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/0-serializaci%C3%B3n/serialise.cpp).
 
 ---
 
-Si ejecutamos el programa anterior:
- - Obtenemos un archivo `my-file.bin`
- - Podemos leerlo con [`hexdump`](https://man7.org/linux/man-pages/man1/hexdump.1.html)
+Si ejecutamos el programa anterior obtenemos un archivo `my-file.bin`.
+
+Podemos leerlo con [`hexdump`](https://man7.org/linux/man-pages/man1/hexdump.1.html):
 
 ```bash
 $ hexdump -C my-file.bin
@@ -514,21 +511,20 @@ $ hexdump -C my-file.bin
 
 ---
 ### Entrada binaria en C++
-Es similar a la entrada:
+Es similar a la salida:
 - [`std::ifstream`](https://en.cppreference.com/w/cpp/io/basic_ifstream) en vez de [`std::ofstream`](https://en.cppreference.com/w/cpp/io/basic_ofstream)
 - [`.read()`](https://en.cppreference.com/w/cpp/io/basic_istream/read) en vez de [`.write()`](https://en.cppreference.com/w/cpp/io/basic_oftream/write)
 
-Recordad manejar los errores.
+<br/>
+
+Recordad manejar los errores, y cerrar el archivo.
 
 ---
 
 ```cpp
 std::ifstream file{"my-file.bin", std::ios::binary};
-if (not file) {
-   std::cerr << "No se pudo abrir el archivo\n";
-}
-```
-```cpp
+if (not file) { /* ... */ }
+
 float float_value;
 
 if (
@@ -536,12 +532,12 @@ if (
       reinterpret_cast<char*>(&float_value),
       sizeof(float_value)
    )
-) {
-   std::cerr << "No se pudo leer el float\n";
-}
+) { /* ... */ }
+
+file.close();
 ```
 
-Ejemplo en [`ejemplos/2-deserialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/2-deserializaci%C3%B3n/deserialise.cpp).
+Ejemplo completo en [`ejemplos/2-deserialización`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/2-deserializaci%C3%B3n/deserialise.cpp).
 
 
 
@@ -576,7 +572,7 @@ print_square(2.0); // NO FUNCIONA, es `double'
 
 ---
 
-Podemos usar una «plantilla» asumiendo un tipo genérico `T`:
+Podemos usar una «plantilla» asumiendo un tipo genérico:
 ```cpp
 template <typename T>
 void print_square (T x) {
@@ -600,7 +596,7 @@ void print_square (float x) {
 
 ---
 
-Podemos generalizar la función de lectura y escritura de antes:
+Generalicemos las funciónes de lectura y escritura:
 
 ```cpp
 template <typename T>
@@ -678,7 +674,7 @@ std::cout << int_value    << "\n"
 input_file.close();
 ```
 
-Ejemplo en [`ejemplos/3-templates`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/3-templates/templates.cpp).
+Ejemplo completo en [`ejemplos/3-templates`](https://github.com/guluc3m/modern-cpp/blob/main/ejemplos/3-templates/templates.cpp).
 
 ---
 
@@ -716,10 +712,13 @@ for (auto const & ciudad : ciudades) {
 ---
 
 Funciones Miembro:
-- [`operator[]`](https://en.cppreference.com/w/cpp/container/vector/operator_at) y [`.at()`](https://en.cppreference.com/w/cpp/container/vector/at): Acceso al elemento _i_
+- [`operator[]`](https://en.cppreference.com/w/cpp/container/vector/operator_at) y [`.at()`](https://en.cppreference.com/w/cpp/container/vector/at): Acceso al elemento
 - [`.push_back()`](https://en.cppreference.com/w/cpp/container/vector/push_back) y [`.emplace_back()`](https://en.cppreference.com/w/cpp/container/vector/emplace_back): Añaden un elemento al final del vector
 - [`.reserve()`](https://en.cppreference.com/w/cpp/container/vector/reserve): Pre-reservan espacio para el vector
 
+```cpp
+#include <vector>
+```
 ```cpp
 ciudades.push_back("Murcia");
 
@@ -791,6 +790,7 @@ for (auto const & [id, nombre] : ciudades) {
 ---
 
 ### [Algoritmos](https://en.cppreference.com/w/cpp/algorithm)
+Funciones genéricas para cualquier contenedor.
 
 - Ordenar, [`std::sort(inicio, fin, predicado)`](https://en.cppreference.com/w/cpp/algorithm/sort)
 - Mapear, [`std::transform(inicio, fin, salida, operación)`](https://en.cppreference.com/w/cpp/algorithm/transform)
@@ -799,6 +799,7 @@ for (auto const & [id, nombre] : ciudades) {
 
 ---
 
+Las puedes concatenar:
 ```cpp
 bool mayor_a_menor (int x, int y) { return x > y; }
 int cuadrado (int x) { return x * x; }
@@ -806,10 +807,19 @@ int producto (int a, int b) { return a * b; }
 
 std::vector<int> valores{1, 3, 4, 5, 2};
 
-// Ordena los valores, haz el cuadrado de ellos, y multiplícalos.
 std::sort(valores.begin(), valores.end(), mayor_a_menor);
-std::transform(valores.begin(), valores.end(), valores.begin(), cuadrado);
-int result = std::accumulate(valores.begin(), valores.end(), 1, producto);
+std::transform(
+   valores.begin(),
+   valores.end(),
+   valores.begin(),
+   cuadrado
+);
+int result = std::accumulate(
+   valores.begin(),
+   valores.end(),
+   1,
+   producto
+);
 ```
 
 ---
@@ -831,22 +841,20 @@ std::sort(
 ---
 
 ```cpp
-[capturas] (parámetros) -> retorno {
-   código
-}
+[capturas] (parámetros) -> retorno { /* código */ }
 ```
- - El retorno es opcional si el compilador lo puede deducir.
- - Las capturas son más complicadas.
+ - El retorno es opcional si el compilador lo puede deducir
+ - Las capturas son más complicadas...
    - Su propósito es cómo se tratan las variables que se referencian en el código
 
 ```cpp
-std::vector<int> filtrar_menores_de (std::vector<int> const & v, int n) {
+auto filtrar_menores_de (std::vector<int> const & v, int n) {
    std::vector<int> resultado;
    std::copy_if(v.begin, v.end(), std::back_inserter(resultado),
-      [=] (int x) {
-         // n se referencia dentro de la función [=] dice que se copie.
+      [=] (int x) {  // [=] captura n, copiándola
          return x < n;
-      });
+      }
+   );
    return resultado;
 }
 ```
@@ -916,8 +924,7 @@ constexpr auto calc_primes () {
 <!-- header: '**Estructuración del código**' -->
 
 ### namespace
-Los espacios de nombre nos permiten agrupar funciones y clases por
-funcionalidad.
+Permiten agrupar funciones y clases por funcionalidad.
 
 ```cpp
 namespace mates {
@@ -928,8 +935,6 @@ namespace mates {
 ```
 
 - Se puede llamar desde fuera como `mates::cuadrado`.
-
----
 - Se puede incluir todos los elementos del espacio de nombres.
 
 ```cpp
@@ -941,22 +946,64 @@ int pitagoras (int x, int y) {
 
 ---
 
-### .hpp y .cpp
+### _Header files_ (`.hpp`) y _source files_ (`.cpp`)
 
-- En el `.hpp` van las declaraciones. En el `.cpp` va la implementación.
-- Puede haber definiciones, por defecto, son _inline_.
-- Al igual que dentro de una clase.
+En el _header_ van las _declaraciones_. En el _source_ van las _definiciones_ (implementación).
+- En el _header_ puede haber definiciones pero, por defecto, son _inline_
+- Constructores y macros en _header_
+- Usa _guards_ en los _header_ (`#ifndef LIB_HPP`, `#define LIB_HPP`) para prevenir duplicados
+- Al definir funciones miembro en el _source_, hay que especificar la clase: `MyClass::my_method() {}`
+
+
+---
+
+```cpp
+// lib.hpp
+
+#ifndef LIB_HPP
+#define LIB_HPP
+
+inline say_hello() { std::cout << "hello\n"; }
+int foo(int bar);
+
+class MyClass() {
+    public:
+        MyClass(float y): _y {y} { }
+
+        int get();
+
+    private:
+        int _x = 0;
+        float _y;
+};
+
+#endif
+```
+
+---
+
+```cpp
+// lib.cpp
+
+int foo(int bar) {
+    return bar + myVar;
+}
+
+int myVar = 0;
+
+MyClass::get() { return _x + _y; }
+```
+
 
 
 ---
 
 <!-- _paginate: skip -->
 ![bg contain opacity:.15](img/gul_logo.svg)
-# Introducción a C++ moderno
-Por Jose Antonio Verde Jiménez y  
-Luis Daniel Casais Mezquida
+# ¡Ánimo!
 
 
+<br>
 <br>
 
 _Grupo de Usuarios de Linux_
